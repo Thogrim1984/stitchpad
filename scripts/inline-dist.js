@@ -1,18 +1,18 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from "fs";
+import path from "path";
 
-const distDir = path.resolve(process.cwd(), 'dist');
-const assetsDir = path.join(distDir, 'assets');
+const distDir = path.resolve(process.cwd(), "dist");
+const assetsDir = path.join(distDir, "assets");
 
 async function inlineDist() {
-  const indexPath = path.join(distDir, 'index.html');
+  const indexPath = path.join(distDir, "index.html");
   const indexExists = await fs
     .access(indexPath)
     .then(() => true)
     .catch(() => false);
 
   if (!indexExists) {
-    console.warn('dist/index.html not found - skipping inline step.');
+    console.warn("dist/index.html not found - skipping inline step.");
     return;
   }
 
@@ -25,22 +25,22 @@ async function inlineDist() {
   );
 
   if (!jsBundle) {
-    throw new Error('Unable to locate JS bundle in dist/assets.');
+    throw new Error("Unable to locate JS bundle in dist/assets.");
   }
   if (!cssBundle) {
-    throw new Error('Unable to locate CSS bundle in dist/assets.');
+    throw new Error("Unable to locate CSS bundle in dist/assets.");
   }
 
   const [jsSource, cssSource] = await Promise.all([
-    fs.readFile(path.join(assetsDir, jsBundle), 'utf-8'),
-    fs.readFile(path.join(assetsDir, cssBundle), 'utf-8'),
+    fs.readFile(path.join(assetsDir, jsBundle), "utf-8"),
+    fs.readFile(path.join(assetsDir, cssBundle), "utf-8"),
   ]);
 
-  const escapedJs = jsSource.replace(/<\/script>/gi, '<\\/script>');
+  const escapedJs = jsSource.replace(/<\/script>/gi, "<\\/script>");
 
   const workerAssignment = workerBundle
     ? `    <script>window.__pdfWorkerPath = "./assets/${workerBundle}";</script>\n`
-    : '';
+    : "";
 
   const inlineHtml = `<!doctype html>
 <html lang="en">
@@ -62,10 +62,10 @@ ${escapedJs}
 </html>
 `;
 
-  await fs.writeFile(indexPath, inlineHtml, 'utf-8');
+  await fs.writeFile(indexPath, inlineHtml, "utf-8");
 }
 
 inlineDist().catch((error) => {
-  console.error('Failed to inline dist assets', error);
+  console.error("Failed to inline dist assets", error);
   process.exitCode = 1;
 });
